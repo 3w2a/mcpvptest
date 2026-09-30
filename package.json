@@ -1,0 +1,13 @@
+{
+  "name": "mcpvp-register",
+  "version": "1.0.0",
+  "private": true,
+  "description": "我的世界大型 PVP 活动报名网站（问卷 + 后台审核），零依赖纯 Node.js",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}

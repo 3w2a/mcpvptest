@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MC PVP 活动报名</title>
+<style>
+  :root{
+    --bg:#1b1d1f;
+    --stone:#2c2f33;
+    --stone-2:#35393d;
+    --edge-l:#5a6067;
+    --edge-d:#131518;
+    --text:#e8eae6;
+    --muted:#9aa2a8;
+    --grass:#6ec24a;
+    --grass-d:#4d9a2f;
+    --diamond:#4ad8d0;
+    --gold:#f2c14e;
+    --red:#e05a4f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh;
+    background:
+      linear-gradient(0deg,rgba(0,0,0,.55),rgba(0,0,0,.55)),
+      repeating-linear-gradient(90deg,#212427 0 28px,#1d2023 28px 56px),
+      repeating-linear-gradient(0deg,#212427 0 28px,#1d2023 28px 56px);
+    background-blend-mode:normal,overlay,overlay;
+    color:var(--text);
+    font-family:"Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+    font-size:15px;line-height:1.6;
+    padding:32px 16px 64px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+
+  /* ---- MC 风格斜角面板 ---- */
+  .panel{
+    background:var(--stone);
+    border:3px solid;
+    border-color:var(--edge-l) var(--edge-d) var(--edge-d) var(--edge-l);
+    box-shadow:0 12px 32px rgba(0,0,0,.5), inset 0 0 0 3px rgba(255,255,255,.03);
+    padding:22px;
+  }
+  .panel + .panel{margin-top:18px}
+
+  /* ---- 头部 ---- */
+  header{padding:0 0 6px}
+  .kicker{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--grass);font-weight:700;
+  }
+  .kicker::before{content:"";width:10px;height:10px;background:var(--grass);box-shadow:inset -3px -3px 0 rgba(0,0,0,.25)}
+  h1{
+    font-size:26px;margin:10px 0 8px;line-height:1.3;letter-spacing:.02em;
+    text-shadow:2px 2px 0 rgba(0,0,0,.55);
+  }
+  .sub{color:var(--muted);font-size:14px;margin:0}
+
+  /* ---- 状态条 ---- */
+  .chances{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+    margin-top:16px;padding-top:14px;border-top:2px solid rgba(0,0,0,.35);
+    font-size:13px;color:var(--muted);
+  }
+  .pip{display:inline-block;width:12px;height:12px;margin-right:4px;vertical-align:-1px;background:var(--grass);
+       border:2px solid;border-color:#8ada66 #2f7a17 #2f7a17 #8ada66}
+  .pip.off{background:#4a5055;border-color:#666d73 #262b2f #262b2f #666d73}
+
+  /* ---- 题目 ---- */
+  .q{
+    background:var(--stone-2);
+    border:2px solid;border-color:#454a50 #1a1d20 #1a1d20 #454a50;
+    padding:16px 16px 14px;margin-bottom:14px;
+  }
+  .q-head{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+  .q-no{
+    flex:none;width:26px;height:26px;display:grid;place-items:center;
+    background:var(--grass);color:#0f1a0a;font-weight:800;font-size:13px;
+    border:2px solid;border-color:#8ada66 #2f7a17 #2f7a17 #8ada66;
+  }
+  .q-title{font-weight:600;font-size:15px;padding-top:1px}
+  .req{color:var(--red);margin-left:4px;font-weight:700}
+  .hint{font-size:12px;color:var(--muted);font-weight:400;display:block;margin-top:2px}
+
+  .opts{display:grid;gap:8px}
+  label.opt{
+    display:flex;align-items:center;gap:10px;cursor:pointer;
+    background:#2a2d31;border:2px solid;border-color:#3f4449 #161819 #161819 #3f4449;
+    padding:10px 12px;transition:background .12s,border-color .12s;
+    font-size:14px;
+  }
+  label.opt:hover{background:#323639}
+  label.opt input{display:none}
+  .box{
+    flex:none;width:18px;height:18px;background:#1c1f22;
+    border:2px solid;border-color:#141618 #5a6067 #5a6067 #141618;
+    display:grid;place-items:center;font-size:12px;color:transparent;
+  }
+  label.opt input:checked ~ .box{background:var(--grass-d);border-color:#2f7a17 #8ada66 #8ada66 #2f7a17;color:#fff}
+  label.opt input:checked ~ .box::after{content:"✓";font-weight:900;line-height:1}
+  label.opt.checked{background:#33393a;border-color:#4f6b45 #1e2a19 #1e2a19 #4f6b45}
+
+  textarea{
+    width:100%;resize:vertical;min-height:64px;
+    background:#1c1f22;color:var(--text);
+    border:2px solid;border-color:#141618 #5a6067 #5a6067 #141618;
+    padding:10px 12px;font-family:inherit;font-size:14px;line-height:1.6;outline:none;
+  }
+  textarea:focus{border-color:var(--grass-d) var(--grass) var(--grass) var(--grass-d);background:#202528}
+  textarea::placeholder{color:#6b7378}
+
+  /* ---- 按钮 ---- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;
+    padding:13px 22px;border:3px solid;
+    border-color:#8ada66 #2f7a17 #2f7a17 #8ada66;
+    background:var(--grass);color:#0d1a07;
+    text-shadow:1px 1px 0 rgba(255,255,255,.25);
+    transition:filter .12s,transform .05s;
+  }
+  .btn:hover{filter:brightness(1.08)}
+  .btn:active{transform:translateY(1px);border-color:#2f7a17 #8ada66 #8ada66 #2f7a17}
+  .btn[disabled]{filter:grayscale(.8) brightness(.7);cursor:not-allowed}
+  .btn.ghost{
+    background:var(--stone-2);color:var(--text);
+    border-color:#5a6067 #131518 #131518 #5a6067;
+    text-shadow:none;font-weight:600;font-size:14px;padding:10px 18px;
+  }
+  .btn.full{width:100%;margin-top:6px;font-size:16px;padding:15px}
+
+  /* ---- 状态卡 ---- */
+  .status{text-align:center;padding:34px 22px}
+  .big{font-size:52px;line-height:1;margin-bottom:14px}
+  .status h2{font-size:21px;margin:0 0 10px;text-shadow:2px 2px 0 rgba(0,0,0,.5)}
+  .status p{color:var(--muted);margin:6px 0 0;font-size:14px}
+  .status.ok h2{color:var(--grass)}
+  .status.wait h2{color:var(--gold)}
+  .status.bad h2{color:var(--red)}
+
+  .infobox{
+    margin:22px auto 0;text-align:left;max-width:460px;
+    background:#20242a;border:2px solid;border-color:#454a50 #1a1d20 #1a1d20 #454a50;
+    padding:16px;
+  }
+  .row{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px dashed rgba(255,255,255,.08)}
+  .row:last-child{border-bottom:none}
+  .row .k{color:var(--muted);font-size:13px;flex:none}
+  .row .v{text-align:right;word-break:break-all;font-weight:600}
+  .copy{
+    background:var(--diamond);color:#05201f;font-weight:800;
+    padding:4px 10px;font-size:13px;cursor:pointer;border:2px solid;
+    border-color:#8ff5ee #1e7d76 #1e7d76 #8ff5ee;font-family:inherit;
+  }
+  .copy:active{transform:translateY(1px)}
+
+  .spin{
+    display:inline-block;width:46px;height:46px;margin-bottom:14px;
+    border:5px solid rgba(242,193,78,.25);border-top-color:var(--gold);
+    border-radius:50%;animation:sp 1s linear infinite;
+  }
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .toast{
+    position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);
+    background:#111;color:#fff;padding:12px 20px;font-size:14px;
+    border-left:5px solid var(--red);opacity:0;pointer-events:none;
+    transition:.25s;z-index:99;max-width:90vw;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast.good{border-left-color:var(--grass)}
+
+  .foot{text-align:center;color:#6b7378;font-size:12px;margin-top:22px}
+  .loading{text-align:center;color:var(--muted);padding:50px 0}
+  @media(max-width:560px){
+    body{padding:18px 10px 48px}
+    h1{font-size:21px}
+    .panel{padding:16px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Minecraft PVP Event</div>
+    <h1 id="title">加载中…</h1>
+    <p class="sub" id="subtitle"></p>
+  </header>
+
+  <div id="chances" class="chances" style="display:none"></div>
+  <div id="app"><div class="panel loading">正在读取问卷…</div></div>
+  <div class="foot">本页面仅用于活动报名，请如实填写。</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var app = document.getElementById('app');
+  var toastEl = document.getElementById('toast');
+  var cfg = null, me = null;
+
+  function toast(msg, good){
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show' + (good ? ' good' : '');
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(function(){ toastEl.className = 'toast'; }, 2600);
+  }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function api(url, opt){
+    return fetch(url, opt).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(j){
+        j.__status = r.status; return j;
+      });
+    });
+  }
+
+  /* ---------------- 顶部剩余机会 ---------------- */
+  function renderChances(){
+    var box = document.getElementById('chances');
+    if (!me) { box.style.display='none'; return; }
+    var pips = '';
+    for (var i=0;i<me.max;i++) pips += '<span class="pip'+(i<me.used?' off':'')+'"></span>';
+    box.style.display = 'flex';
+    box.innerHTML = '<span>答题机会 ' + pips + '</span>' +
+      '<span style="margin-left:auto">已提交 <b style="color:var(--text)">' + me.used + '</b> / ' + me.max + ' 次</span>';
+  }
+
+  /* ---------------- 表单 ---------------- */
+  function renderForm(){
+    var qs = cfg.questions || [];
+    var html = '<div class="panel">';
+    if (me && me.remaining <= 1) {
+      html += '<div style="background:#3a2f18;border-left:4px solid var(--gold);padding:10px 14px;margin-bottom:16px;font-size:13px;color:#f0d9a0">⚠ 这是你的最后一次提交机会，请认真填写。</div>';
+    }
+    html += '<form id="f">';
+    qs.forEach(function(q, i){
+      html += '<div class="q">';
+      html += '<div class="q-head"><div class="q-no">' + (i+1) + '</div><div class="q-title">' + esc(q.title);
+      if (q.required) html += '<span class="req">*</span>';
+      html += '<span class="hint">' + (q.type === 'choice' ? '单选题，请选择一项' : '请自行填写') + '</span></div></div>';
+      if (q.type === 'choice') {
+        html += '<div class="opts">';
+        (q.options||[]).forEach(function(o, oi){
+          var id = 'q_' + q.id + '_' + oi;
+          html += '<label class="opt" for="' + id + '">'
+                +   '<input type="radio" name="' + esc(q.id) + '" id="' + id + '" value="' + esc(o) + '">'
+                +   '<span class="box"></span><span>' + esc(o) + '</span>'
+                + '</label>';
+        });
+        html += '</div>';
+      } else {
+        html += '<textarea name="' + esc(q.id) + '" placeholder="在这里输入你的回答…" maxlength="2000"></textarea>';
+      }
+      html += '</div>';
+    });
+    html += '<button class="btn full" type="submit" id="sub">提交问卷</button>';
+    html += '</form></div>';
+    app.innerHTML = html;
+
+    app.querySelectorAll('.opt input').forEach(function(input){
+      input.addEventListener('change', function(){
+        var group = document.querySelectorAll('input[name="' + CSS.escape(input.name) + '"]');
+        Array.prototype.forEach.call(group, function(r){
+          var lab = r.closest('label.opt');
+          if (lab) lab.classList.toggle('checked', r.checked);
+        });
+      });
+    });
+
+    document.getElementById('f').addEventListener('submit', function(e){
+      e.preventDefault();
+      var btn = document.getElementById('sub');
+      var answers = {};
+      var missing = null;
+      (cfg.questions||[]).forEach(function(q){
+        if (q.type === 'choice') {
+          var sel = document.querySelector('input[name="'+CSS.escape(q.id)+'"]:checked');
+          answers[q.id] = sel ? sel.value : '';
+        } else {
+          var ta = document.querySelector('textarea[name="'+CSS.escape(q.id)+'"]');
+          answers[q.id] = ta ? ta.value.trim() : '';
+        }
+        if (q.required && !answers[q.id] && !missing) missing = q.title;
+      });
+      if (missing) {
+        toast('请完成必答题：' + missing);
+        var missQ = (cfg.questions || []).filter(function(q){ return q.required && !answers[q.id]; })[0];
+        if (missQ) {
+          var node = document.querySelector('[name="' + CSS.escape(missQ.id) + '"]');
+          var box = node && node.closest('.q');
+          if (box) {
+            box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            box.style.borderColor = 'var(--red)';
+            setTimeout(function(){ box.style.borderColor = ''; }, 1800);
+          }
+        }
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = '提交中…';
+      api('/api/submit', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({answers: answers})
+      }).then(function(res){
+        btn.disabled = false;
+        btn.textContent = '提交问卷';
+        if (!res.ok) { toast(res.message || '提交失败'); refresh(true); return; }
+        toast('提交成功', true);
+        refresh(true);
+      }).catch(function(){
+        btn.disabled = false; btn.textContent = '提交问卷';
+        toast('网络错误，请重试');
+      });
+    });
+  }
+
+  /* ---------------- 状态页 ---------------- */
+  function renderStatus(){
+    var s = me.submission;
+    if (s && s.status === 'pending') {
+      app.innerHTML = '<div class="panel status wait">'
+        + '<div class="spin"></div>'
+        + '<h2>您的问卷正在审核中，请耐心等待</h2>'
+        + '<p>管理员审核完成后，刷新本页面即可看到结果。</p>'
+        + '<div class="infobox">'
+        +   '<div class="row"><span class="k">提交编号</span><span class="v">' + esc(s.id) + '</span></div>'
+        +   '<div class="row"><span class="k">提交时间</span><span class="v">' + fmt(s.time) + '</span></div>'
+        +   '<div class="row"><span class="k">当前状态</span><span class="v" style="color:var(--gold)">待审核</span></div>'
+        + '</div>'
+        + '<button class="btn ghost" style="margin-top:18px" onclick="location.reload()">刷新审核状态</button>'
+        + '</div>';
+      return;
+    }
+    if (s && s.status === 'approved') {
+      app.innerHTML = '<div class="panel status ok">'
+        + '<div class="big">✅</div>'
+        + '<h2>恭喜你，审核通过</h2>'
+        + '<p>请按下面的信息加入 QQ 群，进群时回答群问题验证身份。</p>'
+        + '<div class="infobox">'
+        +   '<div class="row"><span class="k">QQ 群号</span><span class="v">'
+        +      '<span style="color:var(--diamond);font-size:17px;margin-right:10px">' + esc(me.qqGroup) + '</span>'
+        +      '<button class="copy" data-copy="' + esc(me.qqGroup) + '">复制</button></span></div>'
+        +   '<div class="row"><span class="k">加群问题答案</span><span class="v">'
+        +      '<span style="color:var(--gold)">' + esc(me.qqAnswer) + '</span>'
+        +      '<button class="copy" style="margin-left:10px" data-copy="' + esc(me.qqAnswer) + '">复制</button></span></div>'
+        +   '<div class="row"><span class="k">提交编号</span><span class="v">' + esc(s.id) + '</span></div>'
+        + '</div>'
+        + '<p style="margin-top:16px;font-size:13px">欢迎来到方块竞技场，我们场上见 🗡️</p>'
+        + '</div>';
+      bindCopy();
+      return;
+    }
+    if (s && s.status === 'rejected') {
+      var canRetry = me.remaining > 0 && me.open;
+      app.innerHTML = '<div class="panel status bad">'
+        + '<div class="big">❌</div>'
+        + '<h2>很遗憾，你的报名未通过审核</h2>'
+        + '<p>管理员已丢弃该问卷。你可以修改答案后重新提交。</p>'
+        + '<div class="infobox">'
+        +   '<div class="row"><span class="k">提交编号</span><span class="v">' + esc(s.id) + '</span></div>'
+        +   '<div class="row"><span class="k">剩余机会</span><span class="v">' + me.remaining + ' / ' + me.max + '</span></div>'
+        + '</div>'
+        + (canRetry
+            ? '<button class="btn" style="margin-top:18px" id="retry">重新填写问卷</button>'
+            : '<p style="margin-top:16px">你已用完所有答题机会，无法再次提交。</p>')
+        + '</div>';
+      var rb = document.getElementById('retry');
+      if (rb) rb.addEventListener('click', function(){ renderForm(); });
+      return;
+    }
+    // 尚未提交
+    if (!me.open) {
+      app.innerHTML = '<div class="panel status bad"><div class="big">🔒</div>'
+        + '<h2>报名通道已关闭</h2><p>活动报名暂时关闭，请关注群内通知。</p></div>';
+      return;
+    }
+    if (me.banned) {
+      app.innerHTML = '<div class="panel status bad"><div class="big">🚫</div>'
+        + '<h2>答题机会已用完</h2>'
+        + '<p>同一 IP 最多可提交 ' + me.max + ' 次，你已提交 ' + me.used + ' 次，禁止继续答题。</p>'
+        + '<p style="margin-top:14px;font-size:12px;opacity:.7">如属误判，请联系活动管理员处理。</p></div>';
+      return;
+    }
+    renderForm();
+  }
+
+  function bindCopy(){
+    app.querySelectorAll('.copy').forEach(function(b){
+      b.addEventListener('click', function(){
+        var t = b.getAttribute('data-copy');
+        var done = function(){ b.textContent = '已复制'; toast('已复制到剪贴板', true); setTimeout(function(){ b.textContent='复制'; }, 1500); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(t).then(done).catch(function(){ fallbackCopy(t); done(); });
+        } else { fallbackCopy(t); done(); }
+      });
+    });
+  }
+  function fallbackCopy(t){
+    var ta = document.createElement('textarea');
+    ta.value = t; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e){}
+    document.body.removeChild(ta);
+  }
+  function fmt(iso){
+    if (!iso) return '-';
+    var d = new Date(iso);
+    if (isNaN(d)) return iso;
+    var p = function(n){ return n<10?'0'+n:n; };
+    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
+  }
+
+  /* ---------------- 启动 ---------------- */
+  function refresh(keepForm){
+    return Promise.all([api('/api/config'), api('/api/me')]).then(function(r){
+      cfg = r[0]; me = r[1];
+      document.title = cfg.title || 'MC PVP 活动报名';
+      document.getElementById('title').textContent = cfg.title || '';
+      document.getElementById('subtitle').textContent = cfg.subtitle || '';
+      renderChances();
+      renderStatus();
+    }).catch(function(e){
+      app.innerHTML = '<div class="panel status bad"><div class="big">⚠️</div><h2>无法连接到服务器</h2><p>请确认服务已启动后刷新页面。</p></div>';
+    });
+  }
+  refresh();
+})();
+</script>
+</body>
+</html>

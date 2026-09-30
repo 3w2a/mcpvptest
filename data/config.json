@@ -1,0 +1,54 @@
+{
+  "title": "方块竞技场 · 大型 PVP 活动报名",
+  "subtitle": "填写下方问卷即可报名。管理员审核通过后，页面会显示 QQ 群号与加群问题答案。",
+  "qqGroup": "123456789",
+  "qqAnswer": "请在这里填写群问题的正确答案",
+  "maxAttempts": 3,
+  "open": true,
+  "adminPassword": "admin123",
+  "questions": [
+    {
+      "id": "qmuo241mfz6r",
+      "type": "text",
+      "title": "您的游戏名称（正版/离线均可）",
+      "required": true,
+      "options": []
+    },
+    {
+      "id": "qmuo25ioqdw0",
+      "type": "choice",
+      "title": "我的世界的英文简称是什么（两个字母）",
+      "required": true,
+      "options": [
+        "ws",
+        "mc",
+        "ad"
+      ]
+    },
+    {
+      "id": "qmuo26vbg5h5",
+      "type": "choice",
+      "title": "以下哪个方块是无法在生存模式下挖掘的",
+      "required": true,
+      "options": [
+        "黑曜石",
+        "圆石",
+        "基岩"
+      ]
+    },
+    {
+      "id": "qmuo28sreekb",
+      "type": "text",
+      "title": "我的世界Java版的多人游戏默认端口号是什么？",
+      "required": true,
+      "options": []
+    },
+    {
+      "id": "qmuo2aqkvetb",
+      "type": "text",
+      "title": "请留下你的QQ号",
+      "required": true,
+      "options": []
+    }
+  ]
+}

@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>报名管理后台</title>
+<style>
+  :root{
+    --bg:#141719;--stone:#24282b;--stone-2:#2d3236;--stone-3:#363b40;
+    --edge-l:#5a6067;--edge-d:#0e1012;
+    --text:#e8eae6;--muted:#98a0a6;
+    --grass:#6ec24a;--grass-d:#4d9a2f;
+    --diamond:#4ad8d0;--gold:#f2c14e;--red:#e05a4f;--blue:#5aa9e0;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:#17191b;
+    color:var(--text);font-family:"Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+    font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  }
+  .bevel{border:2px solid;border-color:var(--edge-l) var(--edge-d) var(--edge-d) var(--edge-l)}
+  .btn{
+    font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;
+    padding:9px 16px;border:2px solid;
+    border-color:#8ada66 #2f7a17 #2f7a17 #8ada66;
+    background:var(--grass);color:#0d1a07;
+    transition:filter .12s,transform .05s;
+  }
+  .btn:hover{filter:brightness(1.08)}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:var(--stone-3);color:var(--text);border-color:#5a6067 #0e1012 #0e1012 #5a6067}
+  .btn.danger{background:var(--red);color:#260805;border-color:#f08b82 #8d2a22 #8d2a22 #f08b82}
+  .btn.blue{background:var(--blue);color:#04202f;border-color:#9ad4f7 #1f5f8d #1f5f8d #9ad4f7}
+  .btn.sm{padding:6px 11px;font-size:12px}
+  .btn[disabled]{filter:grayscale(.7) brightness(.75);cursor:not-allowed}
+  input,textarea,select{
+    background:#1a1d20;color:var(--text);font-family:inherit;font-size:14px;
+    border:2px solid;border-color:#0e1012 #4a5057 #4a5057 #0e1012;
+    padding:8px 10px;width:100%;outline:none;
+  }
+  input:focus,textarea:focus,select:focus{border-color:var(--grass-d) var(--grass) var(--grass) var(--grass-d);background:#1f2427}
+  ::placeholder{color:#666d73}
+
+  /* ---------- 登录 ---------- */
+  #login{min-height:100vh;display:grid;place-items:center;padding:20px;
+    background:repeating-linear-gradient(90deg,#1b1e20 0 30px,#171a1c 30px 60px)}
+  .loginbox{width:100%;max-width:380px;background:var(--stone);padding:28px;
+    border:3px solid;border-color:var(--edge-l) var(--edge-d) var(--edge-d) var(--edge-l);
+    box-shadow:0 20px 50px rgba(0,0,0,.6)}
+  .loginbox h1{font-size:19px;margin:0 0 6px;text-shadow:2px 2px 0 rgba(0,0,0,.5)}
+  .loginbox p{color:var(--muted);font-size:13px;margin:0 0 20px}
+  .loginbox .btn{width:100%;margin-top:12px;padding:12px}
+
+  /* ---------- 布局 ---------- */
+  #panel{display:none;min-height:100vh;flex-direction:column}
+  .top{
+    display:flex;align-items:center;gap:14px;padding:12px 20px;
+    background:var(--stone);border-bottom:3px solid #0e1012;flex-wrap:wrap;
+    position:sticky;top:0;z-index:20;
+  }
+  .logo{font-weight:800;font-size:15px;letter-spacing:.02em;display:flex;align-items:center;gap:9px}
+  .logo::before{content:"";width:14px;height:14px;background:var(--grass);
+    box-shadow:inset -4px -4px 0 rgba(0,0,0,.28)}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+  .tab{
+    padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);
+    background:var(--stone-2);border:2px solid;border-color:#454a50 #0e1012 #0e1012 #454a50;
+    transition:.12s;
+  }
+  .tab:hover{color:var(--text)}
+  .tab.active{background:var(--grass);color:#0d1a07;border-color:#8ada66 #2f7a17 #2f7a17 #8ada66}
+  .tab .badge{
+    display:inline-block;min-width:18px;padding:0 5px;margin-left:7px;font-size:11px;
+    background:var(--red);color:#fff;font-weight:800;
+  }
+  .main{padding:22px;max-width:1180px;width:100%;margin:0 auto;flex:1}
+  .view{display:none}
+  .view.active{display:block}
+
+  /* ---------- 统计 ---------- */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+  .stat{background:var(--stone);padding:18px 20px;border:3px solid;
+    border-color:var(--edge-l) var(--edge-d) var(--edge-d) var(--edge-l)}
+  .stat .n{font-size:34px;font-weight:800;line-height:1.1}
+  .stat .l{color:var(--muted);font-size:12px;margin-top:6px;letter-spacing:.06em}
+  .stat.p .n{color:var(--gold)}
+  .stat.a .n{color:var(--grass)}
+  .stat.t .n{color:var(--diamond)}
+  .stat.r .n{color:var(--red)}
+
+  /* ---------- 卡片/区块 ---------- */
+  .card{background:var(--stone);padding:18px;margin-bottom:16px;border:3px solid;
+    border-color:var(--edge-l) var(--edge-d) var(--edge-d) var(--edge-l)}
+  .card-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:15px}
+  .card-head .sp{margin-left:auto}
+  .sec-title{font-size:12px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin:26px 0 12px;font-weight:700}
+  .sec-title:first-child{margin-top:0}
+
+  /* ---------- 题目编辑 ---------- */
+  .qedit{background:var(--stone-2);padding:14px;margin-bottom:12px;border:2px solid;
+    border-color:#454a50 #141618 #141618 #454a50}
+  .qedit .top-row{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .tag{font-size:11px;font-weight:800;padding:3px 9px;letter-spacing:.05em;flex:none}
+  .tag.c{background:var(--blue);color:#04202f}
+  .tag.t{background:var(--gold);color:#2b1e02}
+  .qedit .ops{display:grid;gap:7px;margin-top:10px}
+  .oprow{display:flex;gap:8px;align-items:center}
+  .oprow .marker{flex:none;width:20px;text-align:center;color:var(--muted);font-size:12px}
+  .chk{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);cursor:pointer;flex:none}
+  .chk input{width:auto;margin:0}
+  .move{display:flex;gap:5px;margin-left:auto}
+
+  /* ---------- 审核 ---------- */
+  .filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .fbtn{padding:8px 15px;font-size:13px;cursor:pointer;background:var(--stone-2);color:var(--muted);
+    border:2px solid;border-color:#454a50 #0e1012 #0e1012 #454a50;font-weight:600}
+  .fbtn.active{background:var(--diamond);color:#05201f;border-color:#8ff5ee #1e7d76 #1e7d76 #8ff5ee}
+  .sub{background:var(--stone);margin-bottom:14px;border:3px solid;
+    border-color:var(--edge-l) var(--edge-d) var(--edge-d) var(--edge-l)}
+  .sub.pending{border-left-width:7px;border-left-color:var(--gold)}
+  .sub.approved{border-left-width:7px;border-left-color:var(--grass)}
+  .sub.rejected{border-left-width:7px;border-left-color:var(--red);opacity:.78}
+  .sub-h{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--stone-2);flex-wrap:wrap;
+    border-bottom:2px solid #141618}
+  .sub-h .who{font-weight:700}
+  .sub-h .meta{color:var(--muted);font-size:12px}
+  .pill{font-size:11px;font-weight:800;padding:3px 10px}
+  .pill.pending{background:var(--gold);color:#2b1e02}
+  .pill.approved{background:var(--grass);color:#0d1a07}
+  .pill.rejected{background:var(--red);color:#fff}
+  .sub-b{padding:14px 16px}
+  .qa{padding:10px 0;border-bottom:1px dashed rgba(255,255,255,.09)}
+  .qa:last-child{border-bottom:none}
+  .qa .qt{font-size:12px;color:var(--muted);margin-bottom:7px}
+  .qa .qt b{color:var(--text);font-size:13px}
+  .qa .ans{font-size:14px;padding-left:2px}
+  .opt-item{display:inline-block;padding:4px 11px;margin:3px 6px 3px 0;font-size:13px;
+    background:#20242a;color:#8b9399;border:2px solid #2f343a}
+  .opt-item.picked{background:var(--grass-d);color:#fff;font-weight:700;
+    border-color:#8ada66 #2f7a17 #2f7a17 #8ada66}
+  .opt-item.picked::before{content:"✓ "}
+  .free{background:#20242a;padding:9px 12px;border-left:4px solid var(--diamond);white-space:pre-wrap;word-break:break-word}
+  .sub-f{display:flex;gap:9px;padding:12px 16px;background:var(--stone-2);border-top:2px solid #141618;flex-wrap:wrap;align-items:center}
+  .empty{text-align:center;color:var(--muted);padding:46px 20px}
+  .empty .big{font-size:40px;margin-bottom:10px}
+
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;letter-spacing:.04em}
+  .sticky-save{position:sticky;bottom:0;background:var(--stone);border-top:3px solid #0e1012;
+    padding:13px 18px;display:flex;gap:12px;align-items:center;z-index:15;flex-wrap:wrap}
+  .sticky-save .sp{margin-left:auto}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:#0b0d0e;color:#fff;
+    padding:12px 20px;font-size:14px;border-left:5px solid var(--grass);opacity:0;pointer-events:none;
+    transition:.25s;z-index:99;max-width:90vw}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast.bad{border-left-color:var(--red)}
+  .switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:13px}
+  .switch input{width:auto}
+  @media(max-width:640px){
+    .main{padding:14px}
+    .top{padding:10px 14px}
+    .tabs{width:100%;margin-left:0}
+    .tab{flex:1;text-align:center;padding:9px 8px;font-size:12px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== 登录 ========== -->
+<div id="login">
+  <div class="loginbox">
+    <h1>报名管理后台</h1>
+    <p>请输入管理密码以继续。</p>
+    <div class="field"><input type="password" id="pwd" placeholder="管理密码" autocomplete="current-password"></div>
+    <button class="btn" id="loginBtn">进入后台</button>
+  </div>
+</div>
+
+<!-- ========== 后台 ========== -->
+<div id="panel">
+  <div class="top">
+    <div class="logo">报名管理后台</div>
+    <div class="tabs">
+      <div class="tab active" data-view="overview">概览</div>
+      <div class="tab" data-view="design">问卷设计</div>
+      <div class="tab" data-view="review">审核<span class="badge" id="tabBadge" style="display:none">0</span></div>
+      <div class="tab" data-view="settings">设置</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- ---- 概览 ---- -->
+    <div class="view active" id="v-overview">
+      <div class="stats">
+        <div class="stat p"><div class="n" id="s-pending">0</div><div class="l">未审核问卷</div></div>
+        <div class="stat a"><div class="n" id="s-approved">0</div><div class="l">已通过</div></div>
+        <div class="stat r"><div class="n" id="s-rejected">0</div><div class="l">已丢弃</div></div>
+        <div class="stat t"><div class="n" id="s-total">0</div><div class="l">总问卷数量</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>待审核列表</h3>
+          <span class="sp"></span>
+          <button class="btn ghost sm" id="goReview">前往审核 ›</button></div>
+        <div id="ovList"></div>
+      </div>
+    </div>
+
+    <!-- ---- 问卷设计 ---- -->
+    <div class="view" id="v-design">
+      <div class="card">
+        <div class="card-head">
+          <h3>问卷题目</h3>
+          <span class="sp"></span>
+          <button class="btn blue sm" id="addChoice">+ 添加选择题</button>
+          <button class="btn sm" id="addText">+ 添加填空题</button>
+        </div>
+        <p style="color:var(--muted);font-size:12px;margin:0 0 14px">
+          选择题：设置问题 + 选项内容；填空题：设置问题，答案由填写者自行输入。修改后点「保存问卷」生效。
+        </p>
+        <div id="designList"></div>
+      </div>
+      <div class="sticky-save">
+        <button class="btn" id="saveDesign">保存问卷</button>
+        <button class="btn ghost" id="reloadDesign">放弃修改</button>
+        <span class="sp" id="designInfo" style="color:var(--muted);font-size:12px"></span>
+      </div>
+    </div>
+
+    <!-- ---- 审核 ---- -->
+    <div class="view" id="v-review">
+      <div class="filter" id="filterBar">
+        <div class="fbtn active" data-f="pending">待审核</div>
+        <div class="fbtn" data-f="approved">已通过</div>
+        <div class="fbtn" data-f="rejected">已丢弃</div>
+        <div class="fbtn" data-f="all">全部</div>
+      </div>
+      <div id="subList"></div>
+    </div>
+
+    <!-- ---- 设置 ---- -->
+    <div class="view" id="v-settings">
+      <div class="card">
+        <div class="card-head"><h3>审核通过后展示的信息</h3></div>
+        <div class="grid2">
+          <div class="field"><label>QQ 群号</label><input id="set-qq" placeholder="例如 123456789"></div>
+          <div class="field"><label>加群问题的正确答案</label><input id="set-ans" placeholder="例如 方块竞技场"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>报名页文案</h3></div>
+        <div class="field"><label>页面标题</label><input id="set-title"></div>
+        <div class="field"><label>副标题说明</label><textarea id="set-sub" rows="2"></textarea></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>答题限制</h3></div>
+        <div class="grid2">
+          <div class="field"><label>同一 IP 允许提交次数</label><input id="set-max" type="number" min="1" max="999"></div>
+          <div class="field"><label>报名通道</label>
+            <label class="switch" style="padding-top:8px"><input type="checkbox" id="set-open"> 开放报名</label>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>管理员密码</h3></div>
+        <div class="field" style="max-width:340px"><label>新密码（留空则不改）</label><input id="set-pwd" type="password" placeholder="至少 4 位" autocomplete="new-password"></div>
+      </div>
+      <div class="sticky-save">
+        <button class="btn" id="saveSettings">保存设置</button>
+        <span class="sp"></span>
+        <button class="btn danger sm" id="clearAll">清空全部问卷数据</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var token = sessionStorage.getItem('adminToken') || '';
+  var data = null, draft = null, filter = 'pending';
+  var toastEl = $('toast');
+
+  function toast(m, bad){
+    toastEl.textContent = m;
+    toastEl.className = 'toast show' + (bad ? ' bad' : '');
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(function(){ toastEl.className = 'toast'; }, 2600);
+  }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function api(url, opt){
+    opt = opt || {};
+    opt.headers = Object.assign({'x-admin-token': token}, opt.headers || {});
+    return fetch(url, opt).then(function(r){
+      if (r.status === 401 && url.indexOf('/login') < 0) { logout(); throw new Error('unauth'); }
+      return r.json().catch(function(){ return {}; });
+    });
+  }
+  function post(url, body){
+    return api(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body||{}) });
+  }
+  function fmt(iso){
+    if (!iso) return '-';
+    var d = new Date(iso);
+    if (isNaN(d)) return iso;
+    var p = function(n){ return n<10?'0'+n:n; };
+    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
+  }
+
+  /* ================= 登录 ================= */
+  function login(){
+    var pwd = $('pwd').value;
+    if (!pwd) { toast('请输入密码', true); return; }
+    $('loginBtn').disabled = true;
+    fetch('/api/admin/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({password: pwd})
+    }).then(function(r){ return r.json().then(function(j){ return {s:r.status, j:j}; }); })
+      .then(function(r){
+        $('loginBtn').disabled = false;
+        if (!r.j.ok) { toast(r.j.message || '密码错误', true); return; }
+        token = r.j.token;
+        sessionStorage.setItem('adminToken', token);
+        enter();
+      }).catch(function(){ $('loginBtn').disabled = false; toast('网络错误', true); });
+  }
+  function logout(){
+    token = ''; sessionStorage.removeItem('adminToken');
+    $('panel').style.display = 'none';
+    $('login').style.display = 'grid';
+    $('pwd').value = '';
+  }
+  $('loginBtn').addEventListener('click', login);
+  $('pwd').addEventListener('keydown', function(e){ if (e.key === 'Enter') login(); });
+
+  /* ================= 进入后台 ================= */
+  function enter(){
+    $('login').style.display = 'none';
+    $('panel').style.display = 'flex';
+    load();
+  }
+
+  function load(){
+    return api('/api/admin/data').then(function(j){
+      if (!j.ok) { toast(j.message || '加载失败', true); return; }
+      data = j;
+      fillStats(j.stats);
+      fillSettings(j.config);
+      draft = JSON.parse(JSON.stringify(j.config.questions || []));
+      renderDesign();
+      renderSubs();
+      var b = $('tabBadge');
+      if (j.stats.pending > 0) { b.style.display='inline-block'; b.textContent = j.stats.pending; }
+      else b.style.display = 'none';
+    });
+  }
+
+  function fillStats(s){
+    $('s-pending').textContent = s.pending;
+    $('s-approved').textContent = s.approved;
+    $('s-rejected').textContent = s.rejected;
+    $('s-total').textContent = s.total;
+    var ovList = $('ovList');
+    var pend = (data.submissions || []).filter(function(x){ return x.status === 'pending'; });
+    if (!pend.length) {
+      ovList.innerHTML = '<div class="empty"><div class="big">✔️</div><div>当前没有待审核的问卷</div></div>';
+    } else {
+      ovList.innerHTML = pend.slice(0, 6).map(function(s){
+        var first = (s.answers||[]).find(function(a){ return a.type === 'text' && a.answer; });
+        return '<div class="qa" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">'
+          + '<span class="meta" style="color:var(--muted);font-size:12px">' + fmt(s.time) + '</span>'
+          + '<span class="sub-h-meta" style="font-weight:600">' + esc(first ? first.answer : '(未填写文本题)') + '</span>'
+          + '<span style="margin-left:auto;color:var(--muted);font-size:12px">' + esc(s.ip) + '</span>'
+          + '</div>';
+      }).join('') + (pend.length > 6 ? '<div style="text-align:center;color:var(--muted);font-size:12px;padding-top:10px">还有 ' + (pend.length-6) + ' 份…</div>' : '');
+    }
+  }
+
+  function fillSettings(c){
+    $('set-qq').value = c.qqGroup || '';
+    $('set-ans').value = c.qqAnswer || '';
+    $('set-title').value = c.title || '';
+    $('set-sub').value = c.subtitle || '';
+    $('set-max').value = c.maxAttempts || 3;
+    $('set-open').checked = !!c.open;
+    $('set-pwd').value = '';
+  }
+
+  /* ================= Tab 切换 ================= */
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('active'); });
+      document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('active'); });
+      t.classList.add('active');
+      $('v-' + t.dataset.view).classList.add('active');
+    });
+  });
+  $('goReview').addEventListener('click', function(){
+    document.querySelector('.tab[data-view="review"]').click();
+  });
+
+  /* ================= 问卷设计 ================= */
+  function renderDesign(){
+    var list = $('designList');
+    if (!draft.length) {
+      list.innerHTML = '<div class="empty"><div class="big">📝</div><div>还没有题目，点右上角按钮添加一道吧</div></div>';
+      $('designInfo').textContent = '';
+      return;
+    }
+    list.innerHTML = draft.map(function(q, i){
+      var isC = q.type === 'choice';
+      var h = '<div class="qedit" data-i="' + i + '">';
+      h += '<div class="top-row">'
+        +   '<span class="tag ' + (isC ? 'c' : 't') + '">' + (isC ? '选择题' : '填空题') + '</span>'
+        +   '<label class="chk"><input type="checkbox" data-act="req"' + (q.required ? ' checked' : '') + '> 必答</label>'
+        +   '<span class="move">'
+        +     '<button class="btn ghost sm" data-act="up" ' + (i===0?'disabled':'') + '>↑</button>'
+        +     '<button class="btn ghost sm" data-act="down" ' + (i===draft.length-1?'disabled':'') + '>↓</button>'
+        +     '<button class="btn danger sm" data-act="del">删除</button>'
+        +   '</span>'
+        + '</div>';
+      h += '<input data-act="title" value="' + esc(q.title) + '" placeholder="请输入题目内容">';
+      if (isC) {
+        h += '<div class="ops">';
+        (q.options||[]).forEach(function(o, oi){
+          h += '<div class="oprow">'
+            +   '<span class="marker">' + String.fromCharCode(65+oi) + '</span>'
+            +   '<input data-act="opt" data-oi="' + oi + '" value="' + esc(o) + '" placeholder="选项内容">'
+            +   '<button class="btn danger sm" data-act="delopt" data-oi="' + oi + '">×</button>'
+            + '</div>';
+        });
+        h += '</div>';
+        h += '<button class="btn ghost sm" style="margin-top:10px" data-act="addopt">+ 添加选项</button>';
+      } else {
+        h += '<div style="margin-top:10px;color:var(--muted);font-size:12px;background:#20242a;padding:9px 12px;border-left:4px solid var(--diamond)">'
+          +   '填空题：填写者在报名页自行输入内容</div>';
+      }
+      h += '</div>';
+      return h;
+    }).join('');
+    var cCount = draft.filter(function(q){ return q.type==='choice'; }).length;
+    $('designInfo').textContent = '共 ' + draft.length + ' 题（选择题 ' + cCount + ' / 填空题 ' + (draft.length-cCount) + '）';
+  }
+
+  $('designList').addEventListener('input', function(e){
+    var el = e.target, box = el.closest('.qedit');
+    if (!box) return;
+    var i = +box.dataset.i, act = el.dataset.act;
+    if (act === 'title') draft[i].title = el.value;
+    else if (act === 'opt') draft[i].options[+el.dataset.oi] = el.value;
+  });
+  $('designList').addEventListener('change', function(e){
+    var el = e.target, box = el.closest('.qedit');
+    if (!box || el.dataset.act !== 'req') return;
+    draft[+box.dataset.i].required = el.checked;
+  });
+  $('designList').addEventListener('click', function(e){
+    var btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    var box = btn.closest('.qedit');
+    if (!box) return;
+    var i = +box.dataset.i, act = btn.dataset.act, q = draft[i];
+    if (act === 'del') {
+      if (!confirm('确定删除这道题？')) return;
+      draft.splice(i, 1); renderDesign(); return;
+    }
+    if (act === 'up' && i > 0) { var t = draft[i-1]; draft[i-1] = draft[i]; draft[i] = t; renderDesign(); return; }
+    if (act === 'down' && i < draft.length-1) { var t2 = draft[i+1]; draft[i+1] = draft[i]; draft[i] = t2; renderDesign(); return; }
+    if (act === 'addopt') { q.options.push(''); renderDesign(); return; }
+    if (act === 'delopt') {
+      if (q.options.length <= 1) { toast('选择题至少保留一个选项', true); return; }
+      q.options.splice(+btn.dataset.oi, 1); renderDesign(); return;
+    }
+  });
+
+  function newQ(type){
+    return {
+      id: 'q' + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+      type: type,
+      title: type === 'choice' ? '新选择题' : '新填空题',
+      required: true,
+      options: type === 'choice' ? ['选项 1', '选项 2'] : []
+    };
+  }
+  $('addChoice').addEventListener('click', function(){ draft.push(newQ('choice')); renderDesign();
+    var l = $('designList').lastElementChild; if (l) l.scrollIntoView({behavior:'smooth', block:'center'}); });
+  $('addText').addEventListener('click', function(){ draft.push(newQ('text')); renderDesign();
+    var l = $('designList').lastElementChild; if (l) l.scrollIntoView({behavior:'smooth', block:'center'}); });
+  $('reloadDesign').addEventListener('click', function(){
+    if (!confirm('放弃本次修改？')) return;
+    draft = JSON.parse(JSON.stringify(data.config.questions || []));
+    renderDesign(); toast('已还原');
+  });
+  $('saveDesign').addEventListener('click', function(){
+    for (var i=0;i<draft.length;i++) {
+      if (!String(draft[i].title||'').trim()) { toast('第 ' + (i+1) + ' 题的题目不能为空', true); return; }
+      if (draft[i].type === 'choice') {
+        var ops = (draft[i].options||[]).map(function(o){ return String(o).trim(); }).filter(Boolean);
+        if (!ops.length) { toast('第 ' + (i+1) + ' 题至少需要一个选项', true); return; }
+      }
+    }
+    if (!draft.length) { toast('至少需要保留一道题', true); return; }
+    if (!confirm('保存后报名页立即生效，确定吗？')) return;
+    post('/api/admin/config', { questions: draft }).then(function(j){
+      if (!j.ok) { toast(j.message || '保存失败', true); return; }
+      toast('问卷已保存');
+      load();
+    });
+  });
+
+  /* ================= 审核 ================= */
+  document.querySelectorAll('#filterBar .fbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('#filterBar .fbtn').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      filter = b.dataset.f;
+      renderSubs();
+    });
+  });
+
+  function renderSubs(){
+    var list = $('subList');
+    var all = (data && data.submissions) || [];
+    var items = filter === 'all' ? all : all.filter(function(s){ return s.status === filter; });
+    if (!items.length) {
+      var tip = {pending:'没有待审核的问卷', approved:'还没有通过的问卷', rejected:'没有被丢弃的问卷', all:'还没有收到任何问卷'}[filter];
+      list.innerHTML = '<div class="empty"><div class="big">📭</div><div>' + tip + '</div></div>';
+      return;
+    }
+    list.innerHTML = items.map(function(s){
+      var st = s.status;
+      var label = {pending:'待审核', approved:'已通过', rejected:'已丢弃'}[st];
+      var h = '<div class="sub ' + st + '">';
+      h += '<div class="sub-h">'
+        +   '<span class="pill ' + st + '">' + label + '</span>'
+        +   '<span class="who">#' + esc(String(s.id).slice(0,8)) + '</span>'
+        +   '<span class="meta">提交 ' + fmt(s.time) + '</span>'
+        +   '<span class="meta">IP ' + esc(s.ip) + '</span>'
+        +   (s.reviewTime ? '<span class="meta">审核 ' + fmt(s.reviewTime) + '</span>' : '')
+        + '</div>';
+      h += '<div class="sub-b">';
+      (s.answers||[]).forEach(function(a, i){
+        h += '<div class="qa"><div class="qt">' + (i+1) + '. <b>' + esc(a.title) + '</b></div>';
+        if (a.type === 'choice') {
+          h += (a.options||[]).map(function(o){
+            return '<span class="opt-item' + (o === a.answer ? ' picked' : '') + '">' + esc(o) + '</span>';
+          }).join('');
+          if (!a.answer) h += '<span class="opt-item" style="color:var(--red)">未作答</span>';
+        } else {
+          h += a.answer
+            ? '<div class="free">' + esc(a.answer) + '</div>'
+            : '<div class="free" style="border-left-color:var(--red);color:var(--red)">未作答</div>';
+        }
+        h += '</div>';
+      });
+      h += '</div>';
+      h += '<div class="sub-f">';
+      if (st === 'pending') {
+        h += '<button class="btn" data-do="approve" data-id="' + esc(s.id) + '">✓ 通过</button>'
+          +  '<button class="btn danger" data-do="reject" data-id="' + esc(s.id) + '">✕ 丢弃</button>';
+      } else {
+        h += '<span style="color:var(--muted);font-size:12px">已审核</span>'
+          +  '<button class="btn ghost sm" data-do="reset" data-id="' + esc(s.id) + '">改回待审核</button>';
+      }
+      h += '<span style="margin-left:auto"></span>'
+        +  '<button class="btn ghost sm" data-do="delete" data-id="' + esc(s.id) + '">删除记录</button>';
+      h += '</div></div>';
+      return h;
+    }).join('');
+  }
+
+  $('subList').addEventListener('click', function(e){
+    var btn = e.target.closest('button[data-do]');
+    if (!btn) return;
+    var id = btn.dataset.id, action = btn.dataset.do;
+    if (action === 'delete') {
+      if (!confirm('删除这条问卷记录？该操作不可恢复。')) return;
+      post('/api/admin/delete', {id:id}).then(function(){ toast('已删除'); load(); });
+      return;
+    }
+    if (action === 'reject' && !confirm('确定丢弃这份问卷？对方将看到未通过提示，并消耗一次机会。')) return;
+    post('/api/admin/review', {id:id, action:action}).then(function(j){
+      if (!j.ok) { toast(j.message || '操作失败', true); return; }
+      toast({approve:'已通过', reject:'已丢弃', reset:'已改回待审核'}[action]);
+      load();
+    });
+  });
+
+  /* ================= 设置 ================= */
+  $('saveSettings').addEventListener('click', function(){
+    var body = {
+      qqGroup: $('set-qq').value.trim(),
+      qqAnswer: $('set-ans').value.trim(),
+      title: $('set-title').value.trim(),
+      subtitle: $('set-sub').value.trim(),
+      maxAttempts: parseInt($('set-max').value, 10) || 3,
+      open: $('set-open').checked
+    };
+    var np = $('set-pwd').value;
+    if (np) body.newPassword = np;
+    post('/api/admin/config', body).then(function(j){
+      if (!j.ok) { toast(j.message || '保存失败', true); return; }
+      toast('设置已保存');
+      if (np) toast('密码已更新，下次请用新密码登录');
+      load();
+    });
+  });
+
+  $('clearAll').addEventListener('click', function(){
+    if (!confirm('⚠ 将删除全部问卷记录（含已通过），不可恢复。确定继续？')) return;
+    if (!confirm('再次确认：真的要清空所有问卷数据吗？')) return;
+    post('/api/admin/clear', {}).then(function(){ toast('已清空全部问卷'); load(); });
+  });
+
+  /* ================= 启动 ================= */
+  if (token) {
+    api('/api/admin/session').then(function(j){ if (j.ok) enter(); else logout(); })
+      .catch(function(){ logout(); });
+  } else {
+    $('pwd').focus();
+  }
+})();
+</script>
+</body>
+</html>

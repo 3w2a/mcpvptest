@@ -1,0 +1,110 @@
+[
+  {
+    "id": "nNH1mBiZFHtj",
+    "ip": "127.0.0.1",
+    "time": "2026-09-30T12:09:57.525Z",
+    "status": "approved",
+    "reviewTime": "2026-09-30T12:10:28.014Z",
+    "note": "",
+    "examTitle": "方块竞技场 · 大型 PVP 活动报名",
+    "answers": [
+      {
+        "qid": "qmuo241mfz6r",
+        "type": "text",
+        "title": "您的游戏名称（正版/离线均可）",
+        "answer": "ImHehehe",
+        "options": []
+      },
+      {
+        "qid": "qmuo25ioqdw0",
+        "type": "choice",
+        "title": "我的世界的英文简称是什么（两个字母）",
+        "answer": "mc",
+        "options": [
+          "ws",
+          "mc",
+          "ad"
+        ]
+      },
+      {
+        "qid": "qmuo26vbg5h5",
+        "type": "choice",
+        "title": "以下哪个方块是无法在生存模式下挖掘的",
+        "answer": "基岩",
+        "options": [
+          "黑曜石",
+          "圆石",
+          "基岩"
+        ]
+      },
+      {
+        "qid": "qmuo28sreekb",
+        "type": "text",
+        "title": "我的世界Java版的多人游戏默认端口号是什么？",
+        "answer": "25565",
+        "options": []
+      },
+      {
+        "qid": "qmuo2aqkvetb",
+        "type": "text",
+        "title": "请留下你的QQ号",
+        "answer": "652332855",
+        "options": []
+      }
+    ]
+  },
+  {
+    "id": "rUqwhdrvzm7L",
+    "ip": "192.168.31.94",
+    "time": "2026-09-30T12:12:03.797Z",
+    "status": "rejected",
+    "reviewTime": "2026-09-30T12:12:39.705Z",
+    "note": "",
+    "examTitle": "方块竞技场 · 大型 PVP 活动报名",
+    "answers": [
+      {
+        "qid": "qmuo241mfz6r",
+        "type": "text",
+        "title": "您的游戏名称（正版/离线均可）",
+        "answer": "114514",
+        "options": []
+      },
+      {
+        "qid": "qmuo25ioqdw0",
+        "type": "choice",
+        "title": "我的世界的英文简称是什么（两个字母）",
+        "answer": "mc",
+        "options": [
+          "ws",
+          "mc",
+          "ad"
+        ]
+      },
+      {
+        "qid": "qmuo26vbg5h5",
+        "type": "choice",
+        "title": "以下哪个方块是无法在生存模式下挖掘的",
+        "answer": "基岩",
+        "options": [
+          "黑曜石",
+          "圆石",
+          "基岩"
+        ]
+      },
+      {
+        "qid": "qmuo28sreekb",
+        "type": "text",
+        "title": "我的世界Java版的多人游戏默认端口号是什么？",
+        "answer": "25565",
+        "options": []
+      },
+      {
+        "qid": "qmuo2aqkvetb",
+        "type": "text",
+        "title": "请留下你的QQ号",
+        "answer": "114514",
+        "options": []
+      }
+    ]
+  }
+]
